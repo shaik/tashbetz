@@ -32,10 +32,37 @@
             display: flex;
             gap: 2px;
             margin: 20px 0;
-            justify-content: center;
+            justify-content: flex-start;
             direction: rtl;
             overflow-x: auto;
             white-space: nowrap;
+            background: #fff5f5;
+            border-radius: 8px;
+            border: 1px solid #ffcdd2;
+            padding: 8px 4px 8px 4px;
+            box-shadow: 0 2px 6px 0 #ffeaea;
+            min-height: 56px;
+            /* Hide scrollbar for webkit browsers */
+            scrollbar-width: thin;
+            scrollbar-color: #ffcdd2 #fff5f5;
+        }
+        .crossword-input::-webkit-scrollbar {
+            height: 8px;
+        }
+        .crossword-input::-webkit-scrollbar-thumb {
+            background: #ffcdd2;
+            border-radius: 4px;
+        }
+        .crossword-input::-webkit-scrollbar-track {
+            background: #fff5f5;
+        }
+        .scroll-hint {
+            text-align: center;
+            color: #b71c1c;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+            user-select: none;
+            display: none;
         }
         .letter-input {
             text-align: center;
@@ -122,7 +149,7 @@
 <body>
     <div class="container">
         <h1 class="text-center mb-2 main-title">פותר תשבצים</h1>
-        <div class="version">גרסה 1.032</div>
+        <div class="version">גרסה 1.033</div>
         
         <div class="card">
             <div class="card-body">
@@ -133,6 +160,7 @@
                 
                 <button class="btn btn-primary mb-3 w-100" onclick="createInputs()">צור שדות קלט</button>
                 
+                <div id="scrollHint" class="scroll-hint">ניתן לגלול ימינה/שמאלה כדי לראות את כל האותיות</div>
                 <div id="crosswordInputs" class="crossword-input"></div>
                 
                 <button id="searchBtn" class="btn btn-primary w-100" onclick="findWords()" disabled>חפש מילים</button>
@@ -151,6 +179,12 @@
             container.innerHTML = '';
             document.getElementById('results').innerHTML = '';
             document.getElementById('results-count').innerHTML = '';
+            const scrollHint = document.getElementById('scrollHint');
+            if (length > 10) {
+                scrollHint.style.display = 'block';
+            } else {
+                scrollHint.style.display = 'none';
+            }
             
             // Adaptive sizing
             let boxSize = 48;
