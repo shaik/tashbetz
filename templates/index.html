@@ -34,17 +34,13 @@
             margin: 20px 0;
             justify-content: center;
             direction: rtl;
+            overflow-x: auto;
+            white-space: nowrap;
         }
         .letter-input {
-            width: 12vw;
-            min-width: 38px;
-            max-width: 48px;
-            height: 12vw;
-            min-height: 38px;
-            max-height: 48px;
             text-align: center;
-            font-size: 6vw;
-            max-font-size: 32px;
+            /* width/height set dynamically in JS */
+            font-size: 24px;
             border: 2px solid #b71c1c;
             border-radius: 8px;
             background-color: #fff;
@@ -55,8 +51,6 @@
         }
         @media (min-width: 600px) {
             .letter-input {
-                width: 45px;
-                height: 45px;
                 font-size: 24px;
             }
         }
@@ -128,13 +122,13 @@
 <body>
     <div class="container">
         <h1 class="text-center mb-2 main-title">פותר תשבצים</h1>
-        <div class="version">גרסה 1.031</div>
+        <div class="version">גרסה 1.032</div>
         
         <div class="card">
             <div class="card-body">
                 <div class="mb-3 length-selector">
                     <label for="wordLength" class="form-label">מספר אותיות:</label>
-                    <input type="number" class="form-control" id="wordLength" min="1" max="15" value="5">
+                    <input type="number" class="form-control" id="wordLength" min="1" max="20" value="5">
                 </div>
                 
                 <button class="btn btn-primary mb-3 w-100" onclick="createInputs()">צור שדות קלט</button>
@@ -151,12 +145,21 @@
 
     <script>
         function createInputs() {
-            const length = parseInt(document.getElementById('wordLength').value);
+            let length = parseInt(document.getElementById('wordLength').value);
+            if (length > 20) length = 20;
             const container = document.getElementById('crosswordInputs');
             container.innerHTML = '';
             document.getElementById('results').innerHTML = '';
             document.getElementById('results-count').innerHTML = '';
             
+            // Adaptive sizing
+            let boxSize = 48;
+            if (length >= 13) boxSize = 32;
+            else if (length >= 7) boxSize = 36;
+            // Font size also adapts
+            let fontSize = boxSize - 8;
+            if (fontSize < 16) fontSize = 16;
+
             for (let i = 0; i < length; i++) {
                 const input = document.createElement('input');
                 input.type = 'text';
@@ -164,6 +167,9 @@
                 input.maxLength = 1;
                 input.dataset.index = i;
                 input.autocomplete = 'off';
+                input.style.width = boxSize + 'px';
+                input.style.height = boxSize + 'px';
+                input.style.fontSize = fontSize + 'px';
                 input.addEventListener('input', function(e) {
                     // Move to next input on letter entry
                     if (e.target.value && e.target.dataset.index < length - 1) {
