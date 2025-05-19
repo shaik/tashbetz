@@ -8,8 +8,25 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-            padding: 20px;
+            background-color: #fff;
+            padding: 10px;
+        }
+        .main-title {
+            color: #b71c1c;
+            font-weight: bold;
+        }
+        .version {
+            font-size: 0.95rem;
+            color: #b71c1c;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .card {
+            border: 1.5px solid #e57373;
+            background: #fff;
+        }
+        .card-body {
+            background: #fff;
         }
         .crossword-input {
             display: flex;
@@ -19,19 +36,34 @@
             direction: rtl;
         }
         .letter-input {
-            width: 45px;
-            height: 45px;
+            width: 12vw;
+            min-width: 38px;
+            max-width: 48px;
+            height: 12vw;
+            min-height: 38px;
+            max-height: 48px;
             text-align: center;
-            font-size: 24px;
-            border: 2px solid #000;
-            border-radius: 0;
-            background-color: white;
+            font-size: 6vw;
+            max-font-size: 32px;
+            border: 2px solid #b71c1c;
+            border-radius: 8px;
+            background-color: #fff;
+            color: #b71c1c;
             direction: rtl;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        @media (min-width: 600px) {
+            .letter-input {
+                width: 45px;
+                height: 45px;
+                font-size: 24px;
+            }
         }
         .letter-input:focus {
             outline: none;
-            border-color: #0d6efd;
-            box-shadow: none;
+            border-color: #e53935;
+            box-shadow: 0 0 0 2px #ffcdd2;
         }
         .results {
             margin-top: 20px;
@@ -41,9 +73,10 @@
         .word-item {
             padding: 10px;
             margin: 5px 0;
-            background-color: white;
-            border: 1px solid #dee2e6;
+            background-color: #fff5f5;
+            border: 1px solid #ffcdd2;
             border-radius: 4px;
+            color: #b71c1c;
         }
         .container {
             max-width: 800px;
@@ -52,11 +85,50 @@
             max-width: 200px;
             margin: 0 auto;
         }
+        #results-count {
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #b71c1c;
+        }
+        .btn, input[type=number] {
+            font-size: 1.2rem;
+        }
+        .btn-primary {
+            background-color: #e53935;
+            border-color: #e53935;
+        }
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: #b71c1c;
+            border-color: #b71c1c;
+        }
+        .btn-success {
+            background-color: #b71c1c;
+            border-color: #b71c1c;
+        }
+        .btn-success:hover, .btn-success:focus {
+            background-color: #e57373;
+            border-color: #e57373;
+        }
+        .form-label {
+            color: #b71c1c;
+        }
+        .alert-info {
+            background-color: #fff5f5;
+            color: #b71c1c;
+            border-color: #ffcdd2;
+        }
+        .alert-danger {
+            background-color: #ffebee;
+            color: #b71c1c;
+            border-color: #ffcdd2;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="text-center mb-4">פותר תשבצים</h1>
+        <h1 class="text-center mb-2 main-title">פותר תשבצים</h1>
+        <div class="version">גרסה 1.031</div>
         
         <div class="card">
             <div class="card-body">
@@ -69,10 +141,11 @@
                 
                 <div id="crosswordInputs" class="crossword-input"></div>
                 
-                <button class="btn btn-success w-100" onclick="findWords()">חפש מילים</button>
+                <button id="searchBtn" class="btn btn-primary w-100" onclick="findWords()" disabled>חפש מילים</button>
             </div>
         </div>
 
+        <div id="results-count"></div>
         <div id="results" class="results"></div>
     </div>
 
@@ -81,6 +154,8 @@
             const length = parseInt(document.getElementById('wordLength').value);
             const container = document.getElementById('crosswordInputs');
             container.innerHTML = '';
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('results-count').innerHTML = '';
             
             for (let i = 0; i < length; i++) {
                 const input = document.createElement('input');
@@ -88,18 +163,41 @@
                 input.className = 'letter-input';
                 input.maxLength = 1;
                 input.dataset.index = i;
+                input.autocomplete = 'off';
                 input.addEventListener('input', function(e) {
                     // Move to next input on letter entry
                     if (e.target.value && e.target.dataset.index < length - 1) {
                         container.children[parseInt(e.target.dataset.index) + 1].focus();
                     }
+                    updateSearchButton();
+                });
+                input.addEventListener('keydown', function(e) {
+                    // Backspace navigation
+                    if (e.key === 'Backspace' && !e.target.value && e.target.dataset.index > 0) {
+                        container.children[parseInt(e.target.dataset.index) - 1].focus();
+                    }
                 });
                 container.appendChild(input);
             }
-            
             // Focus first input
             if (container.firstChild) {
                 container.firstChild.focus();
+            }
+            updateSearchButton();
+        }
+
+        function updateSearchButton() {
+            const inputs = document.querySelectorAll('.letter-input');
+            const length = inputs.length;
+            let hasLetter = false;
+            inputs.forEach(input => {
+                if (input.value.trim()) hasLetter = true;
+            });
+            const searchBtn = document.getElementById('searchBtn');
+            if (hasLetter || length >= 8) {
+                searchBtn.disabled = false;
+            } else {
+                searchBtn.disabled = true;
             }
         }
 
@@ -107,12 +205,15 @@
             const inputs = document.querySelectorAll('.letter-input');
             const length = inputs.length;
             let pattern = '';
-            
+            let hasLetter = false;
             inputs.forEach(input => {
                 const value = input.value.trim();
+                if (value) hasLetter = true;
                 pattern += value || ' ';
             });
-
+            if (!hasLetter && length < 8) {
+                return; // Do not search if no letter and less than 8
+            }
             fetch('/find_words', {
                 method: 'POST',
                 headers: {
@@ -126,13 +227,15 @@
             .then(response => response.json())
             .then(data => {
                 const resultsDiv = document.getElementById('results');
+                const resultsCountDiv = document.getElementById('results-count');
                 resultsDiv.innerHTML = '';
-                
+                resultsCountDiv.innerHTML = '';
                 if (data.words.length === 0) {
+                    resultsCountDiv.innerHTML = '';
                     resultsDiv.innerHTML = '<div class="alert alert-info">לא נמצאו מילים מתאימות</div>';
                     return;
                 }
-
+                resultsCountDiv.innerHTML = `נמצאו ${data.words.length} תוצאות`;
                 data.words.forEach(word => {
                     const wordDiv = document.createElement('div');
                     wordDiv.className = 'word-item';
